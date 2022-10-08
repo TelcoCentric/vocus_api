@@ -12,6 +12,7 @@ on:
 env:
   VOCUS_USERNAME: ${{ secrets.VOCUS_USERNAME }}
   VOCUS_PASSWORD: ${{ secrets.VOCUS_PASSWORD }}
+  VOCUS_BASE_URL: ${{ secrets.VOCUS_BASE_URL }}
 
 permissions:
   contents: read
