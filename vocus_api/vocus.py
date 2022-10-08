@@ -30,35 +30,6 @@ class Portal(object):
         self.password = password
         self.base_url = base_url
 
-    # def login(self):
-    #     data = {
-    #         'staffname': self.username,
-    #         'staffpass': self.password
-    #     }
-
-    #     r = self.session.post(f'{self.base_url}/news.php', data=data)
-
-    #     breakpoint()
-    #     params = {
-    #         'page': 'all',
-    #         'id' : '',
-    #         'supply_status': '',
-    #         'service_status': '',
-    #         'lastupdated': '',
-    #         'linesize': '',
-    #         'ourplan': '',
-    #         'username': '',
-    #         'servicenumber': '',
-    #         'name': '',
-    #         'usertypedata': '',
-    #         'filter': 'filter'
-    #     }
-
-        
-    #     v = self.session.get(f'{self.base_url}/nbnuserlist.php', params=params)
-    #     breakpoint()
-    #     return 
-
     def get_nbn_user_list_as_html(self, **kwargs):
         params = {
             'page': 'all',
