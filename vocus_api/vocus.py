@@ -104,50 +104,19 @@ class Portal(object):
         string_speed_information = "NBN Speed Information"
         string_outage_notification = "Planned Outage Notification"
 
-        service_mapping = {
-            "current_service" : "Current Status",
-            "id" : "ID",
-            "username" : "Username",
-            "name" : "Name",
-            "address" : "Address",
-            "password" : "Password",
-            "carrier_id" : "Carrier ID",
-            "request" : "Request",
-            "line_size" : "Line Size",
-            "plan_type" : "Plan Type",
-            "mapping" : "Mapping",
-            "product_type" : "Product Type",
-            "ip_address" : "IP Address",
-            "service_class" : "Service Class",
-            "date_submitted" : "Date Submitted",
-            "nbn_service_level" : "NBN Service Level",
-        }
         table_details = soup.find('td', string=re.compile(string_details)).find_parent('table')
-        self.obj_map_mapping_from_table(service, table_details, service_mapping)
+        self.obj_map_mapping_from_table_by_next_td(service, table_details, Service.mapping)
 
         #TODO find/test multiple nbn_speed_information
         nbn_speed_information = NBNSpeedInformation()
-        nbn_speed_information_mapping = {
-            "nbn_record_date" : "NBN Record Date",
-            "mean_speed" : "Mean Speed",
-            "current_assured_speed" : "Current Assured Speed"
-        }  
         table_nbn_speed_information = soup.find('td', string=re.compile(string_details)).find('table')
-        self.obj_map_mapping_from_table(nbn_speed_information, table_nbn_speed_information, nbn_speed_information_mapping)
+        self.obj_map_mapping_from_table_by_next_td(nbn_speed_information, table_nbn_speed_information, NBNSpeedInformation.mapping)
         service.nbn_speed_information.append(nbn_speed_information)
 
         #TODO find/test multiple planned_outage_notification
         planned_outage_notification = NBNSpeedInformation()
-        planned_outage_notification_mapping = {
-            "nbn_cr_id" : "NBN CR ID",
-            "status" : "Status",
-            "description" : "Description",
-            "start_date" : "Start Date",
-            "end_date" : "End Date",
-            "duration_hours" : "Duration (Hours)"
-        }  
         table_planned_outage_notification = soup.find('td', string=re.compile(string_details)).find('table')
-        self.obj_map_mapping_from_table(planned_outage_notification, table_planned_outage_notification, planned_outage_notification_mapping)
+        self.obj_map_mapping_from_table_by_next_td(planned_outage_notification, table_planned_outage_notification, PlannedOutageNotification.mapping)
         service.planned_outage_notification.append(planned_outage_notification)
 
         #TODO
@@ -162,9 +131,10 @@ class Portal(object):
         return service
 
     def get_availability(loc_id):
-        pass
 
-    def obj_map_mapping_from_table(service, table, service_mapping):
+        mapping = Availability.mapping
+
+    def obj_map_mapping_from_table_by_next_td(service, table, service_mapping):
         for mapping in service_mapping:
             try:
                 text = table.find('td', string=re.compile(service_mapping[mapping])).find_next_sibling('td').get_text()
@@ -185,6 +155,15 @@ class PlannedOutageNotification:
     def __init__(self, **kwargs) -> None:
         for arg in kwargs:
             setattr(self, kwargs, kwargs[arg])
+    
+    mapping = {
+        "nbn_cr_id" : "NBN CR ID",
+        "status" : "Status",
+        "description" : "Description",
+        "start_date" : "Start Date",
+        "end_date" : "End Date",
+        "duration_hours" : "Duration (Hours)"
+    } 
 
 class NBNSpeedInformation:
     nbn_record_date: str
@@ -194,6 +173,12 @@ class NBNSpeedInformation:
     def __init__(self, **kwargs) -> None:
         for arg in kwargs:
             setattr(self, kwargs, kwargs[arg])
+    
+    mapping = {
+        "nbn_record_date" : "NBN Record Date",
+        "mean_speed" : "Mean Speed",
+        "current_assured_speed" : "Current Assured Speed"
+    }  
 
 class ServiceHistory:
     id: str
@@ -251,7 +236,26 @@ class Service:
         #service_history = list()
 
         for arg in kwargs:
-            setattr(self, kwargs, kwargs[arg])        
+            setattr(self, kwargs, kwargs[arg])   
+
+    mapping = {
+        "current_service" : "Current Status",
+        "id" : "ID",
+        "username" : "Username",
+        "name" : "Name",
+        "address" : "Address",
+        "password" : "Password",
+        "carrier_id" : "Carrier ID",
+        "request" : "Request",
+        "line_size" : "Line Size",
+        "plan_type" : "Plan Type",
+        "mapping" : "Mapping",
+        "product_type" : "Product Type",
+        "ip_address" : "IP Address",
+        "service_class" : "Service Class",
+        "date_submitted" : "Date Submitted",
+        "nbn_service_level" : "NBN Service Level",
+    }
 
 class CopperPair:
     cpi_id: str
@@ -292,3 +296,22 @@ class Availability:
         copper_pairs = list()
         for arg in kwargs:
             setattr(self, kwargs, kwargs[arg])
+
+    mapping = {
+        "result": "Result",
+        "connection_type": "Connection Type",
+        "service_type": "Service Type",
+        "location_id": "Location ID",
+        "availability": "Availability",
+        "address": "Address",
+        "service_class": "Service Class",
+        "new_development_charges": "New Development Charges",
+        "additional_information": "Additional Information",
+        "copper_disconnection_data": "Copper Disconnection Date",
+        "csa_id": "CSA ID",
+        "min_through_put": "Min ThroughPut",
+        "max_available_speed": "Max Available Speed",
+        "fttn_higher_speed_tier": "FTTN Higher Speed Tier",
+        "alternate_technology": "Alternate Technology",
+        "subsequent_install_charge": "Subsequent Install Charge"
+    }
