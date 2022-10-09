@@ -155,3 +155,5 @@ tests/vcr_cassettes
 pytest.ini
 detailedServiceData.json
 todo/
+*.csv
+*.xlsx

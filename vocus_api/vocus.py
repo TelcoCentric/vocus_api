@@ -105,7 +105,6 @@ class Portal(object):
         footer_row = data_rows.pop(-1) # eg: Check Availability, Help, ... Logout
         page_indicator_row = data_rows.pop(-1) # page indicator eg: Rows 1 to 128 of 128
 
-
         for row in data_rows:
             service = Service()
             details = [x.text.strip() for x in row.find_all('td')]
