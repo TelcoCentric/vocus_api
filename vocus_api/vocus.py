@@ -95,26 +95,30 @@ class Portal(object):
         string_nbn_transaction_list = "NBN  Transaction List"
         table = soup.find('td', string=re.compile(string_nbn_transaction_list)).find_parent('table')
 
-        title_row = table.find_next('tr')
-        header_row = title_row.find_next('tr')
-        search_row = header_row.find_next('tr')
+        title_row = table.find_next('tr') # eg: Check Availability, Help, ... Logout
+        header_row = title_row.find_next('tr') # eg: ID, Status, Request, Date Updated ... Name, Domain
+        search_row = header_row.find_next('tr') 
 
         headers = [camel_case_convert(x.text.strip()) for x in header_row.find_all('td')]
 
         data_rows = search_row.find_all_next('tr')
+        footer_row = data_rows.pop(-1) # eg: Check Availability, Help, ... Logout
+        page_indicator_row = data_rows.pop(-1) # page indicator eg: Rows 1 to 128 of 128
+
+
         for row in data_rows:
             service = Service()
             details = [x.text.strip() for x in row.find_all('td')]
 
             for x in range(len(details)):
                 setattr(service, headers[x], details[x])
+            
+            # Carrier ID seems to be Location ID with two additional digits on the end.
+            # This is a bit of an assumption, but so far, so good.
+            # get_service() will fill out location_id from an actual input on vocus page.
+            service.location_id = "LOC" + service.carrier_id[:-2]
 
             services.append(service)
-
-        # Carrier ID seems to be Location ID with two additional digits on the end.
-        # This is a bit of an assumption, but so far, so good.
-        # get_service() will fill out location_id from an actual input on vocus page.
-        service.location_id = "LOC" + service.carrier_id[:-2]
 
         return services
 
