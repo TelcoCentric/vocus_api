@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from typing import List
 
 def camel_case_convert (camel_input):
-    words = re.findall(r'[A-Z]?[a-z]+|[A-Z]{2,}(?=[A-Z][a-z]|\d|\W|$)|\d+', camel_input)
+    words = re.findall(r'[A-Z]?[a-z]+|[A-Z]{2,}(?=[A-Z][a-z]|\d|\W|$)|\d+', camel_input.strip())
     word = '_'.join(map(str.lower, words))
     if word in ('class', 'def'):
         return word + "_"
@@ -37,6 +37,32 @@ class Portal(object):
         self.username = username
         self.password = password
         self.base_url = base_url
+
+    def get_nbn_availability_as_html(self, **kwargs):
+        data = {
+            'LotNumber': '',
+            'Unit1stNumber': '',
+            'Unit1stSuffix': '',
+            'Unit1stType': '',
+            'FloorNumber': '',
+            'FloorSuffix': '',
+            'Street1stNumber': '',
+            'Street1stNumberSuffix': '',
+            'StreetName': '',
+            'StreetType': 'ST', # defaults to ST in form
+            'city': '',
+            'state': 'NSW', # defaults to NSW in form
+            'postcode': '',
+            'locationid': '',
+            'fnn_carrier_id': '',
+            'Submit': 'Submit' # defaults to Submit in form
+        }
+
+        for arg in kwargs:
+            if kwargs[arg] is not None:
+                data[arg] = kwargs[arg]
+
+        return self.session.post(f'{self.base_url}/nbnavailable.php', data=data)
 
     def get_nbn_user_list_as_html(self, **kwargs):
         params = {
@@ -73,12 +99,12 @@ class Portal(object):
         header_row = title_row.find_next('tr')
         search_row = header_row.find_next('tr')
 
-        headers = [camel_case_convert(x.text) for x in header_row.find_all('td')]
+        headers = [camel_case_convert(x.text.strip()) for x in header_row.find_all('td')]
 
         data_rows = search_row.find_all_next('tr')
         for row in data_rows:
             service = Service()
-            details = [x.text for x in row.find_all('td')]
+            details = [x.text.strip() for x in row.find_all('td')]
 
             for x in range(len(details)):
                 setattr(service, headers[x], details[x])
@@ -105,18 +131,18 @@ class Portal(object):
         string_outage_notification = "Planned Outage Notification"
 
         table_details = soup.find('td', string=re.compile(string_details)).find_parent('table')
-        self.obj_map_mapping_from_table_by_next_td(service, table_details, Service.mapping)
+        Portal.obj_map_mapping_from_table_by_next_td(service, table_details, Service.mapping)
 
         #TODO find/test multiple nbn_speed_information
         nbn_speed_information = NBNSpeedInformation()
         table_nbn_speed_information = soup.find('td', string=re.compile(string_details)).find('table')
-        self.obj_map_mapping_from_table_by_next_td(nbn_speed_information, table_nbn_speed_information, NBNSpeedInformation.mapping)
+        Portal.obj_map_mapping_from_table_by_next_td(nbn_speed_information, table_nbn_speed_information, NBNSpeedInformation.mapping)
         service.nbn_speed_information.append(nbn_speed_information)
 
         #TODO find/test multiple planned_outage_notification
         planned_outage_notification = NBNSpeedInformation()
         table_planned_outage_notification = soup.find('td', string=re.compile(string_details)).find('table')
-        self.obj_map_mapping_from_table_by_next_td(planned_outage_notification, table_planned_outage_notification, PlannedOutageNotification.mapping)
+        Portal.obj_map_mapping_from_table_by_next_td(planned_outage_notification, table_planned_outage_notification, PlannedOutageNotification.mapping)
         service.planned_outage_notification.append(planned_outage_notification)
 
         #TODO
@@ -125,19 +151,27 @@ class Portal(object):
         #TODO
         # table_service_history = soup.find('td', string=re.compile(string_service_history)).find_parent('table')
 
-        service.location_id = "LOC" + soup.find('input', name='carrier_id').get('value')
-        service.nbn_type = soup.find('input', name='nbn_type').get('value')
+        service.location_id = "LOC" + soup.find('input', name='carrier_id').get('value').strip()
+        service.nbn_type = soup.find('input', name='nbn_type').get('value').strip()
 
         return service
 
-    def get_availability(loc_id):
+    def get_availability(self, location_id):
+        availability = Availability()
 
-        mapping = Availability.mapping
+        response = self.get_nbn_availability_as_html(locationid=location_id)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        string_nbn_availability = 'NBN Availability'
+        table_nbn_availability = soup.find('td', string=re.compile(string_nbn_availability)).find_parent('table').find_next('table').find_next('table')
+        Portal.obj_map_mapping_from_table_by_next_td(availability, table_nbn_availability, Availability.mapping)
+
+        return availability
 
     def obj_map_mapping_from_table_by_next_td(service, table, service_mapping):
         for mapping in service_mapping:
             try:
-                text = table.find('td', string=re.compile(service_mapping[mapping])).find_next_sibling('td').get_text()
+                text = table.find('td', string=re.compile(service_mapping[mapping])).find_next_sibling('td').get_text().strip()
                 setattr(service, mapping, text)
             except:
                 setattr(service, mapping, "")
