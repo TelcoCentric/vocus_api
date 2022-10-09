@@ -85,6 +85,11 @@ class Portal(object):
 
             services.append(service)
 
+        # Carrier ID seems to be Location ID with two additional digits on the end.
+        # This is a bit of an assumption, but so far, so good.
+        # get_service() will fill out location_id from an actual input on vocus page.
+        service.location_id = "LOC" + service.carrier_id[:-2]
+
         return services
 
     def get_service(self, id):
@@ -118,7 +123,7 @@ class Portal(object):
             "nbn_service_level" : "NBN Service Level",
         }
         table_details = soup.find('td', string=re.compile(string_details)).find_parent('table')
-        self.service_map_mapping(service, table_details, service_mapping)
+        self.obj_map_mapping_from_table(service, table_details, service_mapping)
 
         #TODO find/test multiple nbn_speed_information
         nbn_speed_information = NBNSpeedInformation()
@@ -128,7 +133,7 @@ class Portal(object):
             "current_assured_speed" : "Current Assured Speed"
         }  
         table_nbn_speed_information = soup.find('td', string=re.compile(string_details)).find('table')
-        self.service_map_mapping(nbn_speed_information, table_nbn_speed_information, nbn_speed_information_mapping)
+        self.obj_map_mapping_from_table(nbn_speed_information, table_nbn_speed_information, nbn_speed_information_mapping)
         service.nbn_speed_information.append(nbn_speed_information)
 
         #TODO find/test multiple planned_outage_notification
@@ -142,11 +147,14 @@ class Portal(object):
             "duration_hours" : "Duration (Hours)"
         }  
         table_planned_outage_notification = soup.find('td', string=re.compile(string_details)).find('table')
-        self.service_map_mapping(planned_outage_notification, table_planned_outage_notification, planned_outage_notification_mapping)
+        self.obj_map_mapping_from_table(planned_outage_notification, table_planned_outage_notification, planned_outage_notification_mapping)
         service.planned_outage_notification.append(planned_outage_notification)
 
-        #table_nbn_allowances = soup.find('td', string=re.compile(string_nbn_allowances)).find_parent('table')
-        #table_service_history = soup.find('td', string=re.compile(string_service_history)).find_parent('table')
+        #TODO
+        # table_nbn_allowances = soup.find('td', string=re.compile(string_nbn_allowances)).find_parent('table')
+        
+        #TODO
+        # table_service_history = soup.find('td', string=re.compile(string_service_history)).find_parent('table')
 
         service.location_id = "LOC" + soup.find('input', name='carrier_id').get('value')
         service.nbn_type = soup.find('input', name='nbn_type').get('value')
@@ -156,11 +164,11 @@ class Portal(object):
     def get_availability(loc_id):
         pass
 
-    def service_map_mapping(service, table, service_mapping):
+    def obj_map_mapping_from_table(service, table, service_mapping):
         for mapping in service_mapping:
             try:
-                status_text = table.find('td', string=re.compile(service_mapping[mapping])).find_next_sibling('td').get_text()
-                setattr(service, mapping, status_text)
+                text = table.find('td', string=re.compile(service_mapping[mapping])).find_next_sibling('td').get_text()
+                setattr(service, mapping, text)
             except:
                 setattr(service, mapping, "")
         
