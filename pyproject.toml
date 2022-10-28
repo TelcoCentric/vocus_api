@@ -1,0 +1,28 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vocus-api"
+version = "0.0.2"
+description = "Python wrapper for Vocus portal using bs4 to parse"
+readme = "README.md"
+authors = [{ name = "Jake Thomas", email = "jake@telcocentric.com.au" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["vocus", "api"]
+dependencies = [
+    "requests >= 2.28.0",
+    "bs4 == 0.0.1"
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = ["vcr", "python-dotenv", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/telcocentric/vocus_api"

@@ -1,4 +1,5 @@
 import re
+import os
 import string
 import requests
 from bs4 import BeautifulSoup
@@ -33,7 +34,12 @@ class Portal(object):
         self._session = session
         return session
 
-    def __init__(self, base_url, username, password):
+    def __init__(self, base_url=None, username=None, password=None):
+
+        if base_url is None: base_url = os.environ.get('VOCUS_BASE_URL', None)
+        if username is None: username = os.environ.get('VOCUS_USERNAME', None)
+        if password is None: password = os.environ.get('VOCUS_PASSWORD', None)
+
         self.username = username
         self.password = password
         self.base_url = base_url
@@ -138,15 +144,16 @@ class Portal(object):
 
         #TODO find/test multiple nbn_speed_information
         nbn_speed_information = NBNSpeedInformation()
-        table_nbn_speed_information = soup.find('td', string=re.compile(string_details)).find('table')
-        Portal.obj_map_mapping_from_table_by_next_td(nbn_speed_information, table_nbn_speed_information, NBNSpeedInformation.mapping)
-        service.nbn_speed_information.append(nbn_speed_information)
+        table_nbn_speed_information = soup.find('td', string=re.compile(string_speed_information)).find('table')
+        if table_nbn_speed_information is not None:
+            Portal.obj_map_mapping_from_table_by_next_td(nbn_speed_information, table_nbn_speed_information, NBNSpeedInformation.mapping)
+            service.nbn_speed_information.append(nbn_speed_information)
 
-        #TODO find/test multiple planned_outage_notification
-        planned_outage_notification = NBNSpeedInformation()
-        table_planned_outage_notification = soup.find('td', string=re.compile(string_details)).find('table')
-        Portal.obj_map_mapping_from_table_by_next_td(planned_outage_notification, table_planned_outage_notification, PlannedOutageNotification.mapping)
-        service.planned_outage_notification.append(planned_outage_notification)
+        # #TODO find/test multiple planned_outage_notification
+        # planned_outage_notification = NBNOutageNotification()
+        # table_planned_outage_notification = soup.find('td', string=re.compile(string_outage_notification)).find('table')
+        # Portal.obj_map_mapping_from_table_by_next_td(planned_outage_notification, table_planned_outage_notification, PlannedOutageNotification.mapping)
+        # service.planned_outage_notification.append(planned_outage_notification)
 
         #TODO
         # table_nbn_allowances = soup.find('td', string=re.compile(string_nbn_allowances)).find_parent('table')
@@ -154,8 +161,11 @@ class Portal(object):
         #TODO
         # table_service_history = soup.find('td', string=re.compile(string_service_history)).find_parent('table')
 
-        service.location_id = "LOC" + soup.find('input', name='carrier_id').get('value').strip()
-        service.nbn_type = soup.find('input', name='nbn_type').get('value').strip()
+        b = soup.find("input", {"name":"carrier_id"})
+        service.location_id = "LOC" + b.get('value').strip()
+
+        a = soup.find("input", {"name":"nbn_type"})
+        service.nbn_type = a.get('value').strip()
 
         return service
 

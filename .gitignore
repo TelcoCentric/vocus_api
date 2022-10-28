@@ -157,3 +157,6 @@ detailedServiceData.json
 todo/
 *.csv
 *.xlsx
+
+.env
+/env
