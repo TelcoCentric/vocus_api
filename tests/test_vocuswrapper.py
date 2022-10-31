@@ -18,6 +18,32 @@ def test_vocus_service_info():
     assert isinstance(vocus_service, vocus.Service)
     assert vocus_service.id == test_id, "The ID should be in the response"
 
+@vcr.use_cassette('tests/vcr_cassettes/vocus-service-cancelled.yml')
+def test_vocus_service_info_cancelled():
+    """Test a call to a cancelled Vocus service"""
+
+    test_id = '13015554'
+    portal = vocus.Portal()
+    vocus_service = portal.get_service(test_id)
+
+    assert isinstance(vocus_service, vocus.Service)
+    assert vocus_service.id == test_id, "The ID should be in the response"
+    assert vocus_service.current_service == 'provisioned', "The status should be provisioned"
+    assert vocus_service.ip_address == '', "There should be no IP associated with rejected."
+
+@vcr.use_cassette('tests/vcr_cassettes/vocus-service-rejected.yml')
+def test_vocus_service_info_rejected():
+    """Test a call to a rejected Vocus service"""
+
+    test_id = '13015428'
+    portal = vocus.Portal()
+    vocus_service = portal.get_service(test_id)
+
+    assert isinstance(vocus_service, vocus.Service)
+    assert vocus_service.id == test_id, "The ID should be in the response"
+    assert vocus_service.current_service == 'rejected', "The status should be rejected"
+    assert vocus_service.ip_address == '', "There should be no IP associated with rejected."
+
 @vcr.use_cassette('tests/vcr_cassettes/vocus-service-list.yml')
 def test_vocus_service_get_all():
     """Test a call to get list of vocus services"""

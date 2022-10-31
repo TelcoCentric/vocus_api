@@ -144,8 +144,9 @@ class Portal(object):
 
         #TODO find/test multiple nbn_speed_information
         nbn_speed_information = NBNSpeedInformation()
-        table_nbn_speed_information = soup.find('td', string=re.compile(string_speed_information)).find('table')
-        if table_nbn_speed_information is not None:
+        td_nbn_speed_information = soup.find('td', string=re.compile(string_speed_information))
+        if td_nbn_speed_information is not None:
+            table_nbn_speed_information = td_nbn_speed_information.find('table')
             Portal.obj_map_mapping_from_table_by_next_td(nbn_speed_information, table_nbn_speed_information, NBNSpeedInformation.mapping)
             service.nbn_speed_information.append(nbn_speed_information)
 
@@ -162,10 +163,12 @@ class Portal(object):
         # table_service_history = soup.find('td', string=re.compile(string_service_history)).find_parent('table')
 
         b = soup.find("input", {"name":"carrier_id"})
-        service.location_id = "LOC" + b.get('value').strip()
+        if b is not None:
+            service.location_id = "LOC" + b.get('value').strip()
 
         a = soup.find("input", {"name":"nbn_type"})
-        service.nbn_type = a.get('value').strip()
+        if a is not None:
+            service.nbn_type = a.get('value').strip()
 
         return service
 
@@ -253,7 +256,7 @@ class NBNAllowance:
             setattr(self, kwargs, kwargs[arg])
 
 class Service:
-    current_status: str
+    current_service: str
     id: str
     username: str
     name: str
