@@ -134,6 +134,7 @@ class Portal(object):
         soup = BeautifulSoup(response.text, 'html.parser')
 
         string_details = "Current NBN Details of"
+        string_session = "User Online"
         string_nbn_allowances = "NBN Allowances"
         string_service_history = "Service History"
         string_speed_information = "NBN Speed Information"
@@ -156,6 +157,8 @@ class Portal(object):
         # Portal.obj_map_mapping_from_table_by_next_td(planned_outage_notification, table_planned_outage_notification, PlannedOutageNotification.mapping)
         # service.planned_outage_notification.append(planned_outage_notification)
 
+        session = Session()
+        table_session = soup.find('td', string=re.compile(string_session))
         #TODO
         # table_nbn_allowances = soup.find('td', string=re.compile(string_nbn_allowances)).find_parent('table')
         
@@ -230,6 +233,29 @@ class NBNSpeedInformation:
         "current_assured_speed" : "Current Assured Speed"
     }  
 
+class Session:
+    session_id: str
+    cpe_oui: str
+    avcid: str
+    mac_address: str
+    mb_downloaded: str
+    ip: str
+    time_online: str
+
+    def __init__(self, **kwargs) -> None:
+        for arg in kwargs:
+            setattr(self, kwargs, kwargs[arg])
+
+    mapping = {
+        "session_id" : "Session Id",
+        "cpe_oui" : "CPE OUI",
+        "avcid" : "AVCID",
+        "mac_address" : "MAC Address",
+        "mb_downloaded" : "MB Downloaded",
+        "ip" : "IP",
+        "time_online": "Time Online"
+    }  
+
 class ServiceHistory:
     id: str
     request: str
@@ -241,6 +267,15 @@ class ServiceHistory:
     def __init__(self, **kwargs) -> None:
         for arg in kwargs:
             setattr(self, kwargs, kwargs[arg])
+
+    mapping = {
+        "id": "ID",
+        "request": "Request",
+        "status": "Status",
+        "line_size": "Line Size",
+        "plan_type": "Plan Type",
+        "date_updated": "Date Updated",
+    }
 
 class NBNAllowance:
     allowance_id: str
@@ -254,6 +289,16 @@ class NBNAllowance:
     def __init__(self, **kwargs) -> None:
         for arg in kwargs:
             setattr(self, kwargs, kwargs[arg])
+
+    mapping = {
+        "allowance_id": "Allowance Id",
+        "username": "Username",
+        "reset_date": "Reset Date",
+        "quota": "Quota",
+        "consummed": "Consummed",
+        "balance": "Balance",
+        "reset_amount": "Reset Amount",
+    }
 
 class Service:
     current_service: str
@@ -272,18 +317,20 @@ class Service:
     service_class: str
     date_submitted: str
     nbn_service_level: str
+    session: List[Session]
     nbn_speed_information: List[NBNSpeedInformation]
     planned_outage_notification: List[PlannedOutageNotification]
-    #nbn_allowances: List[NBNAllowance]
-    #service_history: List[ServiceHistory]
+    nbn_allowances: List[NBNAllowance]
+    service_history: List[ServiceHistory]
     location_id: str
     nbn_type: str
 
     def __init__(self, **kwargs) -> None:
         nbn_speed_information = list()
         planned_outage_notification = list()
-        #nbn_allowances = list()
-        #service_history = list()
+        session = list()
+        nbn_allowances = list()
+        service_history = list()
 
         for arg in kwargs:
             setattr(self, kwargs, kwargs[arg])   

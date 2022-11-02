@@ -11,12 +11,21 @@ from src.vocus_api import vocus
 def test_vocus_service_info():
     """Test a call to get a Vocus service's info"""
 
-    test_id = '12998156'
+    test_id = '12784709'
     portal = vocus.Portal()
     vocus_service = portal.get_service(test_id)
 
     assert isinstance(vocus_service, vocus.Service)
     assert vocus_service.id == test_id, "The ID should be in the response"
+    assert vocus_service.username is not None, "There should be a username in the response"
+    assert vocus_service.password is not None, "There should be a password in the response"
+    assert vocus_service.date_submitted is not None, "There should be a date_submitted in the response"
+
+    assert isinstance(vocus_service.service_history, vocus.ServiceHistory)
+    assert isinstance(vocus_service.user_online, vocus.Session)
+
+
+
 
 @vcr.use_cassette('tests/vcr_cassettes/vocus-service-cancelled.yml')
 def test_vocus_service_info_cancelled():
