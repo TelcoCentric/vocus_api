@@ -19,17 +19,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python
+    - name: "Set up Python"
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
         
-    - name: Install dependencies
+    - name: "Install dependencies"
       run: |
         python -m pip install --upgrade pip
-        pip install build twine
+        pip install build twine bumpver
+        
+    - name: "Bump package version"
+      run: |
+        python3 -m bumpver --patch
 
-    # Build and upload to PyPI
     - name: "Builds and uploads to PyPI"
       run: |
         python3 -m build
