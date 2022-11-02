@@ -22,7 +22,28 @@ dependencies = [
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
-dev = ["vcr", "python-dotenv", "pytest"]
+dev = ["vcr", "python-dotenv", "pytest", "pip-tools", "bumpver"]
 
 [project.urls]
 Homepage = "https://github.com/telcocentric/vocus_api"
+
+[tool.bumpver]
+current_version = "0.0.2"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = true
+push            = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"'
+]
+"README.md" = [
+    "{version}",
+    "{pep440_version}",
+]
+"src/vocus_api/__init__.py" = [
+        "{version}"
+]
