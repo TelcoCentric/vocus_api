@@ -31,7 +31,7 @@ jobs:
         
     - name: "Bump package version"
       run: |
-        python3 -m bumpver --patch
+        python3 -m bumpver update --patch
 
     - name: "Builds and uploads to PyPI"
       run: |
